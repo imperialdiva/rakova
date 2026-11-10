@@ -1,0 +1,12 @@
+[project]
+name = "grpc-notes-seminar"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["grpcio>=1.70,<2", "protobuf>=5,<7"]
+
+[project.optional-dependencies]
+dev = ["grpcio-tools>=1.70,<2", "pytest>=8,<10"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

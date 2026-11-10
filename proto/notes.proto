@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package notes.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Состояние заметки. Нулевое значение означает отсутствие явного выбора.
+enum NoteState {
+  NOTE_STATE_UNSPECIFIED = 0;
+  NOTE_STATE_ACTIVE = 1;
+  NOTE_STATE_ARCHIVED = 2;
+}
+
+// Заметка, хранимая сервером.
+message Note {
+  reserved 7;
+  reserved "legacy_tag";
+  int64 id = 1; // Положительный идентификатор.
+  string title = 2; // Непустой заголовок.
+  string body = 3; // Текст заметки.
+  NoteState state = 4; // Состояние заметки.
+  google.protobuf.Timestamp created_at = 5; // Время создания UTC.
+  google.protobuf.Timestamp remind_at = 6; // Необязательное время напоминания UTC.
+}
+
+// Данные для создания заметки.
+message CreateNoteRequest {
+  string title = 1; // Заголовок.
+  string body = 2; // Текст.
+  google.protobuf.Timestamp remind_at = 3; // Необязательное время напоминания.
+}
+
+// Поиск заметки по идентификатору.
+message GetNoteRequest {
+  int64 id = 1; // Положительный идентификатор.
+}
+
+// Фильтр для потока заметок.
+message ListNotesRequest {
+  NoteState state = 1; // UNSPECIFIED означает все состояния.
+}
+
+// Запрос архивации заметки.
+message ArchiveNoteRequest {
+  int64 id = 1; // Положительный идентификатор.
+}
+
+// Подтверждение архивации.
+message ArchiveNoteResponse {
+  Note note = 1; // Обновлённая заметка.
+}
+
+// Контракт сервиса заметок.
+service NotesService {
+  // Создаёт заметку.
+  rpc CreateNote(CreateNoteRequest) returns (Note);
+  // Возвращает заметку по ID.
+  rpc GetNote(GetNoteRequest) returns (Note);
+  // Передаёт снимок списка заметок серверным потоком.
+  rpc ListNotes(ListNotesRequest) returns (stream Note);
+  // Архивирует заметку; повторное архивирование возвращает ALREADY_EXISTS.
+  rpc ArchiveNote(ArchiveNoteRequest) returns (ArchiveNoteResponse);
+}
